@@ -84,53 +84,111 @@ class StorageManager {
         return filteredLogs;
     }
 
-    // Export/Import methods
+    // // Export/Import methods
+    // exportData() {
+    //     const data = {
+    //         carName: this.getCarName(),
+    //         theme: this.getTheme(),
+    //         maintenanceLogs: this.getMaintenanceLogs(),
+    //         exportDate: new Date().toISOString(),
+    //         version: '1.0'
+    //     };
+    //     return JSON.stringify(data, null, 2);
+    // }
     exportData() {
-        const data = {
-            carName: this.getCarName(),
-            theme: this.getTheme(),
-            maintenanceLogs: this.getMaintenanceLogs(),
-            exportDate: new Date().toISOString(),
-            version: '1.0'
-        };
-        return JSON.stringify(data, null, 2);
-    }
-
-    importData(jsonData) {
-        try {
-            const data = JSON.parse(jsonData);
-            
-            // Validate data structure
-            if (!data.version || !data.maintenanceLogs) {
-                throw new Error('Invalid data format');
-            }
-
-            // Import car name if available
-            if (data.carName) {
-                this.setCarName(data.carName);
-            }
-
-            // Import theme if available
-            if (data.theme) {
-                this.setTheme(data.theme);
-            }
-
-            // Import maintenance logs
-            if (Array.isArray(data.maintenanceLogs)) {
-                this.saveMaintenanceLogs(data.maintenanceLogs);
-            }
-
-            return {
-                success: true,
-                message: `Successfully imported ${data.maintenanceLogs.length} entries`
-            };
-        } catch (error) {
-            return {
-                success: false,
-                message: `Import failed: ${error.message}`
-            };
+    const data = {
+        carName: this.getCarName(),
+        theme: this.getTheme(),
+        language: this.getLanguage(), // Include language in export
+        maintenanceLogs: this.getMaintenanceLogs(),
+        exportDate: new Date().toISOString(),
+        version: '1.1' // Update version
+    };
+    return JSON.stringify(data, null, 2);
+}
+importData(jsonData) {
+    try {
+        let data;
+        // Try to parse as JSON (handles both .car and .json)
+        if (typeof jsonData === 'string') {
+            data = JSON.parse(jsonData);
+        } else if (typeof jsonData === 'object') {
+            data = jsonData; // In case it's already parsed
+        } else {
+            throw new Error('Invalid data format');
         }
+
+        // Validate data structure
+        if (!data.version || !data.maintenanceLogs) {
+            throw new Error('Invalid data format - missing required fields');
+        }
+
+        // Import car name if available
+        if (data.carName) {
+            this.setCarName(data.carName);
+        }
+
+        // Import theme if available
+        if (data.theme) {
+            this.setTheme(data.theme);
+        }
+
+        // Import language if available
+        if (data.language) {
+            this.setLanguage(data.language);
+        }
+
+        // Import maintenance logs
+        if (Array.isArray(data.maintenanceLogs)) {
+            this.saveMaintenanceLogs(data.maintenanceLogs);
+        }
+
+        return {
+            success: true,
+            message: `Successfully imported ${data.maintenanceLogs.length} entries`
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: `Import failed: ${error.message}`
+        };
     }
+}
+    // importData(jsonData) {
+    //     try {
+    //         const data = JSON.parse(jsonData);
+            
+    //         // Validate data structure
+    //         if (!data.version || !data.maintenanceLogs) {
+    //             throw new Error('Invalid data format');
+    //         }
+
+    //         // Import car name if available
+    //         if (data.carName) {
+    //             this.setCarName(data.carName);
+    //         }
+
+    //         // Import theme if available
+    //         if (data.theme) {
+    //             this.setTheme(data.theme);
+    //         }
+
+    //         // Import maintenance logs
+    //         if (Array.isArray(data.maintenanceLogs)) {
+    //             this.saveMaintenanceLogs(data.maintenanceLogs);
+    //         }
+
+    //         return {
+    //             success: true,
+    //             message: `Successfully imported ${data.maintenanceLogs.length} entries`
+    //         };
+    //     } catch (error) {
+    //         return {
+    //             success: false,
+    //             message: `Import failed: ${error.message}`
+    //         };
+    //     }
+    // }
 
     // Search and filter methods
     searchMaintenanceLogs(searchTerm, filterType = '') {

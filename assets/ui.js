@@ -398,31 +398,70 @@ editEntry(id) {
         );
     }
 
-    exportData() {
-        const data = this.storage.exportData();
-        const carName = this.storage.getCarName().replace(/[^a-z0-9]/gi, '_').toLowerCase();
-        const timestamp = new Date().toISOString().split('T')[0];
-        const filename = `${carName}_maintenance_${timestamp}.car`;
+    // exportData() {
+    //     const data = this.storage.exportData();
+    //     const carName = this.storage.getCarName().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    //     const timestamp = new Date().toISOString().split('T')[0];
+    //     const filename = `${carName}_maintenance_${timestamp}.car`;
         
-        this.downloadFile(data, filename, 'application/json');
-        this.showNotification('Data exported successfully!', 'success');
+    //     this.downloadFile(data, filename, 'application/json');
+    //     this.showNotification('Data exported successfully!', 'success');
+    // }
+exportData() {
+    const data = this.storage.exportData();
+    const carName = this.storage.getCarName().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const timestamp = new Date().toISOString().split('T')[0];
+    
+    // Force .car extension by creating a blob with the correct type
+    const blob = new Blob([data], { type: 'application/vnd.carcare.data' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${carName}_maintenance_${timestamp}.car`;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 100);
+    
+    this.showNotification('Data exported successfully!', 'success');
+}
+importData() {
+    // Create file input dynamically
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = '.car,.json';
+    fileInput.style.display = 'none';
+    
+    fileInput.addEventListener('change', (e) => {
+        this.handleFileImport(e);
+        document.body.removeChild(fileInput);
+    });
+    
+    document.body.appendChild(fileInput);
+    fileInput.click();
+}
+
+handleFileImport(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Check for valid extensions
+    const validExtensions = ['.car', '.json'];
+    const fileExt = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+    
+    if (!validExtensions.includes(fileExt)) {
+        this.showNotification('Please select a valid file (.car or .json)', 'error');
+        return;
     }
 
-    importData() {
-        document.getElementById('import-file').click();
-    }
-
-    handleFileImport(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-        
-        if (!file.name.endsWith('.car')) {
-            this.showNotification('Please select a valid .car file', 'error');
-            return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (e) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
             const result = this.storage.importData(e.target.result);
             if (result.success) {
                 this.showNotification(result.message, 'success');
@@ -434,12 +473,47 @@ editEntry(id) {
             } else {
                 this.showNotification(result.message, 'error');
             }
-        };
-        reader.readAsText(file);
+        } catch (error) {
+            this.showNotification('Failed to import file: ' + error.message, 'error');
+        }
+    };
+    reader.onerror = () => {
+        this.showNotification('Error reading file', 'error');
+    };
+    reader.readAsText(file);
+}
+    // importData() {
+    //     document.getElementById('import-file').click();
+    // }
+
+    // handleFileImport(e) {
+    //     const file = e.target.files[0];
+    //     if (!file) return;
         
-        // Clear the input
-        e.target.value = '';
-    }
+    //     if (!file.name.endsWith('.car')) {
+    //         this.showNotification('Please select a valid .car file', 'error');
+    //         return;
+    //     }
+        
+    //     const reader = new FileReader();
+    //     reader.onload = (e) => {
+    //         const result = this.storage.importData(e.target.result);
+    //         if (result.success) {
+    //             this.showNotification(result.message, 'success');
+    //             this.updateStatistics();
+    //             this.renderMaintenanceLogs();
+    //             this.closeModal('settings-modal');
+    //             // Update car name in nav
+    //             document.getElementById('nav-car-name').textContent = this.storage.getCarName();
+    //         } else {
+    //             this.showNotification(result.message, 'error');
+    //         }
+    //     };
+    //     reader.readAsText(file);
+        
+    //     // Clear the input
+    //     e.target.value = '';
+    // }
 
     exportToPDF() {
         const { jsPDF } = window.jspdf;
@@ -542,7 +616,39 @@ editEntry(id) {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
     }
+// Helper method to force file download with specific extension
+downloadFileWithExtension(content, filename, extension, contentType = 'application/octet-stream') {
+    // Ensure the extension is included
+    if (!filename.endsWith(extension)) {
+        filename = `${filename}${extension}`;
+    }
+    
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    setTimeout(() => {
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }, 100);
+}
 
+// Updated exportData using the helper
+exportData() {
+    const data = this.storage.exportData();
+    const carName = this.storage.getCarName().replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const timestamp = new Date().toISOString().split('T')[0];
+    const filename = `${carName}_maintenance_${timestamp}`;
+    
+    this.downloadFileWithExtension(data, filename, '.car', 'application/vnd.carcare.data');
+    this.showNotification('Data exported successfully!', 'success');
+}
     showNotification(message, type = 'info') {
         // Create notification element
         const notification = document.createElement('div');
