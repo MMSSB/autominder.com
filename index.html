@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="car tracker Maintenance">
+    <meta name="keywords" content="car maintenance, tracker maintenance, car tracker">
+    <meta name="author" content="MMS">
+    <title>AutoMinder</title>
+    <!-- <title>CarCare Log</title> -->
+    <link rel="shortcut icon" href="assets/carlogo.ico" type="image/x-icon">
+    <link rel="stylesheet" href="assets/styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+          <link
+        rel="stylesheet"
+        href="https://site-assets.fontawesome.com/releases/v6.7.2/css/all.css"
+      >
+
+      <link
+        rel="stylesheet"
+        href="https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-solid.css"
+      >
+
+      <link
+        rel="stylesheet"
+        href="https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-regular.css"
+      >
+
+      <link
+        rel="stylesheet"
+        href="https://site-assets.fontawesome.com/releases/v6.7.2/css/sharp-light.css"
+      >
+      <link
+        rel="stylesheet"
+        href="https://site-assets.fontawesome.com/releases/v6.7.2/css/duotone.css"
+      />
+      <link
+        rel="stylesheet"
+        href="https://site-assets.fontawesome.com/releases/v6.7.2/css/brands.css"
+      />
+</head>
+<body>
+    <div id="app">
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="screen">
+            <div class="welcome-container">
+                <div class="welcome-logo">
+                    <i class="fas fa-car"></i>
+                </div>
+                <h1>Welcome to CarCare Log</h1>
+                <p>Your personal car maintenance companion</p>
+                <div class="welcome-form">
+                    <input type="text" id="car-name-input" placeholder="Enter your car name or model" maxlength="50">
+                    <button id="start-btn" class="startbtn btn-primary">
+                        <i class="fas fa-arrow-right"></i>
+                        Get Started
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main App -->
+        <div id="main-app" class="screen hidden">
+            <!-- Navigation -->
+            <nav class="navbar">
+                <div class="nav-brand">
+                    <i class="fas fa-car" style="color: var(--text-primary);"></i>
+                    <span id="nav-car-name">CarCare Log</span>
+                </div>
+                <div class="nav-actions">
+                    <button id="add-entry-btn" class="btn btn-primary">
+                        <i class="fas fa-plus"></i>
+                        Add Entry
+                    </button>
+                    <button id="settings-btn" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Dashboard -->
+            <main class="main-content">
+                <div class="dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-clipboard-list"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-entries">0</h3>
+                                <p>Total Entries</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="total-cost">$0</h3>
+                                <p>Total Cost</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3 id="last-service">Never</h3>
+                                <p>Last Service</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search and Filter -->
+                    <div class="search-section">
+                        <div class="search-bar">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="search-input" placeholder="Search maintenance logs...">
+                        </div>
+                        <select id="filter-type" class="filter-select">
+                            <option value="">All Categories</option>
+                            <option value="oil-change">Oil Change</option>
+                            <option value="tire-rotation">Tire Rotation</option>
+                            <option value="brake-service">Brake Service</option>
+                            <option value="inspection">Inspection</option>
+                            <option value="repair">Repair</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Maintenance Logs -->
+                    <div class="logs-section">
+                        <div class="logs-header">
+                            <h2>Maintenance History</h2>
+                            <div class="logs-actions">
+                                <button id="export-pdf-btn" class="btn btn-outline">
+                                    <i class="fas fa-file-pdf"></i>
+                                    Export PDF
+                                </button>
+                                <button id="export-data-btn" class="btn btn-outline">
+                                    <i class="fas fa-download"></i>
+                                    Export Data
+                                </button>
+                            </div>
+                        </div>
+                        <div id="maintenance-logs" class="logs-container">
+                            <div class="no-logs">
+                                <i class="fas fa-tools"></i>
+                                <h3>No maintenance records yet</h3>
+                                <p>Start by adding your first maintenance entry</p>
+                                <button class="btn btn-primary" onclick="showAddEntryModal()">
+                                    <i class="fas fa-plus"></i>
+                                    Add First Entry
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <div class="stat-card"></div>
+            </main>
+        </div>
+
+        <!-- Add Entry Modal -->
+        <div id="add-entry-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Add Maintenance Entry</h2>
+                    <button class="close-btn" onclick="closeModal('add-entry-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <form id="add-entry-form" class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="entry-type">Type</label>
+                            <select id="entry-type" required>
+                                <option value="">Select type</option>
+                                <option value="oil-change">Oil Change</option>
+                                <option value="tire-rotation">Tire Rotation</option>
+                                <option value="brake-service">Brake Service</option>
+                                <option value="inspection">Inspection</option>
+                                <option value="repair">Repair</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-date">Date</label>
+                            <input type="date" id="entry-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-mileage">Mileage</label>
+                            <input type="number" id="entry-mileage" placeholder="Current mileage">
+                        </div>
+                        <div class="form-group">
+                            <label for="entry-cost">Cost ($)</label>
+                            <input type="number" id="entry-cost" step="0.01" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-description">Description</label>
+                        <input type="text" id="entry-description" placeholder="Brief description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-notes">Notes</label>
+                        <textarea id="entry-notes" rows="4" placeholder="Additional notes, parts used, etc."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="entry-next-due">Next Service Due</label>
+                        <input type="date" id="entry-next-due">
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModal('add-entry-modal')">Cancel</button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i>
+                            Save Entry
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div id="settings-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="close-btn" onclick="closeModal('settings-modal')">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="settings-section">
+                        <h3>Vehicle Information</h3>
+                        <div class="form-group">
+                            <label for="settings-car-name">Car Name/Model</label>
+                            <input type="text" id="settings-car-name" maxlength="50">
+                            <button id="update-car-name" class="btn btn-outline">Update</button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>Theme</h3>
+                        <div class="theme-options">
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="light">
+                                <div class="theme-preview light">
+                                    <i class="fas fa-sun"></i>
+                                    <span>Light</span>
+                                </div>
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="dark">
+                                <div class="theme-preview dark">
+                                    <i class="fas fa-moon"></i>
+                                    <span>Dark</span>
+                                </div>
+                            </label>
+                            <label class="theme-option">
+                                <input type="radio" name="theme" value="system">
+                                <div class="theme-preview system">
+                                    <i class="fas fa-laptop"></i>
+                                    <span>System</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+<!-- <div class="settings-section">
+    <h3>Language</h3>
+    <div class="theme-options">
+        <label class="theme-option">
+            <input type="radio" name="language" value="system">
+            <div class="theme-preview system">
+                <i class="fas fa-globe"></i>
+                <span>System Default</span>
+            </div>
+        </label>
+        <label class="theme-option">
+            <input type="radio" name="language" value="en">
+            <div class="theme-preview light">
+                <i class="fas fa-language"></i>
+                <span>English</span>
+            </div>
+        </label>
+        <label class="theme-option">
+            <input type="radio" name="language" value="ar">
+            <div class="theme-preview dark">
+                <i class="fas fa-language"></i>
+                <span>العربية</span>
+            </div>
+        </label>
+    </div>
+</div> -->
+                    <div class="settings-section">
+                        <h3>Data Management</h3>
+                        <div class="data-actions">
+                            <input type="file" id="import-file" accept=".car" style="display: none;">
+                            <button id="import-data-btn" class="btn btn-outline">
+                                <i class="fas fa-upload"></i>
+                                Import Data
+                            </button>
+                            <button id="export-settings-data-btn" class="btn btn-outline">
+                                <i class="fas fa-download"></i>
+                                Export Data
+                            </button>
+                            <button id="clear-data-btn" class="btn btn-danger">
+                                <i class="fas fa-trash"></i>
+                                Clear All Data
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="settings-section">
+                        <h3>About</h3>
+                        <p>CarCare Log v1.0</p>
+                        <p>A modern car maintenance tracker</p>
+                        <p>made By <a href="https://mmssb.github.io"><span style="color: #2563eb;">MMS</span></a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmation-modal" class="modal">
+            <div class="modal-content small">
+                <div class="modal-body text-center">
+                    <div class="confirmation-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <h3 id="confirmation-title">Confirm Action</h3>
+                    <p id="confirmation-message">Are you sure you want to proceed?</p>
+                    <div class="modal-footer">
+                        <button id="confirmation-cancel" class="btn btn-secondary">Cancel</button>
+                        <button id="confirmation-confirm" class="btn btn-danger">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+<div id="mms-overlay">
+    <a href="https://mmssb.github.io/" target="_blank" rel="noopener noreferrer">
+      <img src="https://mmssb.github.io/assets/images/mmslogo.PNG" alt="MMS Logo" class="mms-logo">
+      <span>Made by MMS</span>
+    </a>
+  </div>
+<!-- <script src="lang.js"></script> -->
+<script src="assets/storage.js"></script>
+<script src="assets/ui.js"></script>
+<script src="assets/app.js"></script>
