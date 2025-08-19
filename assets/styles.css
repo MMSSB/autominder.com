@@ -941,3 +941,34 @@ body {
   #mms-overlay a:hover {
     color: #000;
   }
+        /* Add RTL support styles */
+        [dir="rtl"] .text-right {
+            text-align: left !important;
+        }
+        [dir="rtl"] .text-left {
+            text-align: right !important;
+        }
+        [dir="rtl"] .entry-header {
+            flex-direction: row-reverse;
+        }
+        [dir="rtl"] .entry-meta {
+            flex-direction: row-reverse;
+        }
+        [dir="rtl"] .entry-actions {
+            flex-direction: row-reverse;
+        }
+        [dir="rtl"] .search-bar i {
+            right: auto;
+            left: 12px;
+        }
+        [dir="rtl"] .search-bar input {
+            padding-left: 40px;
+            padding-right: 12px;
+        }
+        [dir="rtl"] .modal-footer {
+            flex-direction: row-reverse;
+        }
+        [dir="rtl"] .theme-options,
+        [dir="rtl"] .data-actions {
+            flex-direction: row-reverse;
+        }
